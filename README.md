@@ -1,4 +1,4 @@
-# Vulcanizare Sofronea – Online Reservation System
+# Online Reservation System
 
 A simple **Flask-based web application** for managing service reservations for an auto vulcanization business. Customers can request appointments online, while admins can confirm or reject reservations and automatically notify customers by email.
 
