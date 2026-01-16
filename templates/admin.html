@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+    <meta charset="UTF-8">
+    <title>Management | Vulcanizare Sofronea</title>
+    <style>
+        body { font-family: 'Segoe UI', sans-serif; background: #1a1a1a; color: white; padding: 20px; }
+        .admin-container { max-width: 1200px; margin: auto; }
+        h1 { color: #3498db; border-bottom: 2px solid #3498db; padding-bottom: 10px; }
+        
+        /* Formular Manual */
+        .manual-entry { background: #252525; padding: 20px; border-radius: 8px; margin-bottom: 30px; border: 1px solid #444; }
+        .manual-entry h2 { color: #2ecc71; margin-top: 0; font-size: 1.2rem; }
+        .form-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; margin-bottom: 15px; }
+        input, select { padding: 8px; border-radius: 4px; border: 1px solid #555; background: #333; color: white; }
+        .btn-add { background: #2ecc71; color: white; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer; font-weight: bold; }
+        
+        /* Tabel */
+        table { width: 100%; border-collapse: collapse; background: #252525; margin-top: 10px; }
+        th, td { padding: 12px; border: 1px solid #444; text-align: left; font-size: 0.9rem; }
+        th { background: #3498db; }
+        .btn-confirm { background: #2ecc71; color: white; padding: 5px 10px; text-decoration: none; border-radius: 3px; font-size: 0.8rem; }
+        .btn-reject { background: #e74c3c; color: white; padding: 5px 10px; text-decoration: none; border-radius: 3px; font-size: 0.8rem; }
+    </style>
+</head>
+<body>
+    <div class="admin-container">
+        <h1>Panou Gestiune - Vulcanizare Sofronea</h1>
+
+        <div class="manual-entry">
+            <h2>➕ Adaugă Programare Manuală (Apel Telefon)</h2>
+            <form action="/add_manual_reservation" method="POST">
+                <div class="form-row">
+                    <input type="text" name="name" placeholder="Nume Client" required>
+                    <input type="tel" name="phone" placeholder="Telefon" required>
+                    <input type="text" name="car-make" placeholder="Marcă Mașină" required>
+                    <input type="text" name="car-model" placeholder="Model" required>
+                </div>
+                <div class="form-row">
+                    <select name="service" required>
+                        <option value="tire-change">Schimb Anvelope</option>
+                        <option value="balancing">Echilibrare</option>
+                        <option value="repair">Reparație Pană</option>
+                    </select>
+                    <input type="date" name="date" required>
+                    <input type="time" name="time" required>
+                    <button type="submit" class="btn-add">Salvează Programarea</button>
+                </div>
+            </form>
+        </div>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>Data Cererii</th>
+                    <th>Client / Telefon</th>
+                    <th>Vehicul</th>
+                    <th>Serviciu</th>
+                    <th>Data & Ora Programată</th>
+                    <th>Status</th>
+                    <th>Acțiuni</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for res in reservations | reverse %}
+                <tr>
+                    <td>{{ res.timestamp }}</td>
+                    <td><strong>{{ res.nume }}</strong><br>{{ res.telefon }}</td>
+                    <td>{{ res.marca }} {{ res.model }}</td>
+                    <td>{{ res.serviciu }}</td>
+                    <td>{{ res.data_pref }} | <strong>{{ res.ora_pref }}</strong></td>
+                    <td style="color: {% if res.status == 'Confirmat' %}#2ecc71{% elif res.status == 'Respins' %}#e74c3c{% else %}#f39c12{% endif %};">
+                        {{ res.status }}
+                    </td>
+                    <td>
+                        {% if res.status == 'In asteptare' %}
+                        <a href="/update_status/{{ res.id }}/confirm" class="btn-confirm">Confirmă</a>
+                        <a href="/update_status/{{ res.id }}/reject" class="btn-reject">Respinge</a>
+                        {% else %}
+                        -
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</body>
+</html>

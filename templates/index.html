@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="ro">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ProTire | Servicii Profesionale de Anvelope și Geometrie</title>
+    <style>
+        :root {
+            --primary: #3498db;
+            --dark: #1a1a1a;
+            --light: #f4f4f4;
+            --accent: #2980b9;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: var(--dark);
+            color: white;
+            line-height: 1.6;
+        }
+
+        header {
+            background: rgba(0, 0, 0, 0.9);
+            padding: 1rem 5%;
+            position: fixed;
+            width: 100%;
+            top: 0;
+            z-index: 1000;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 2px solid var(--primary);
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: var(--primary);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            text-decoration: none;
+        }
+
+        nav a {
+            color: white;
+            text-decoration: none;
+            margin-left: 20px;
+            font-weight: 500;
+            transition: 0.3s;
+        }
+
+        nav a:hover {
+            color: var(--primary);
+        }
+
+        .hero {
+            height: 80vh;
+            background: linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.7)), url('/static/1.png');
+            background-size: cover;
+            background-position: center;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            padding: 0 20px;
+            margin-top: 60px;
+        }
+
+        .hero h1 {
+            font-size: 3.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .hero p {
+            font-size: 1.2rem;
+            max-width: 700px;
+            margin-bottom: 2rem;
+        }
+
+        .btn {
+            background: var(--primary);
+            color: white;
+            padding: 15px 30px;
+            text-decoration: none;
+            border-radius: 5px;
+            font-weight: bold;
+            text-transform: uppercase;
+            transition: 0.3s;
+        }
+
+        .btn:hover {
+            background: var(--accent);
+        }
+
+        .services {
+            padding: 80px 5%;
+            text-align: center;
+        }
+
+        .services h2 {
+            font-size: 2.5rem;
+            margin-bottom: 50px;
+        }
+
+        .service-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 30px;
+        }
+
+        .service-card {
+            background: #252525;
+            padding: 30px;
+            border-radius: 10px;
+            transition: transform 0.3s;
+            border: 1px solid #333;
+        }
+
+        .service-card:hover {
+            transform: translateY(-10px);
+            border-color: var(--primary);
+        }
+
+        .service-card img {
+            width: 80px;
+            margin-bottom: 20px;
+        }
+
+        .service-card h3 {
+            margin-bottom: 15px;
+            color: var(--primary);
+        }
+
+        footer {
+            padding: 50px 5%;
+            background: #000;
+            text-align: center;
+            border-top: 1px solid #333;
+        }
+
+        .contact-info {
+            margin-bottom: 20px;
+        }
+
+        @media (max-width: 768px) {
+            .hero h1 {
+                font-size: 2.2rem;
+            }
+
+            nav {
+                display: none;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <header>
+        <a href="/" class="logo">La Ionică</a>
+        <nav>
+            <a href="#services">Servicii</a>
+            <a href="/rezervation">Programare Online</a>
+        </nav>
+    </header>
+
+    <section class="hero">
+        <h1>Servicii Profesionale pentru Anvelope</h1>
+        <p>Schimb de anvelope, echilibrare pentru siguranța ta pe drum. Servicii
+            rapide, echipamente profesionale și prețuri competente.</p>
+        <a href="/rezervation" class="btn">Programează-te Acum</a>
+    </section>
+
+    <section id="services" class="services">
+        <h2>Serviciile Noastre Profesionale</h2>
+        <div class="service-grid">
+            <div class="service-card">
+                <img src="static/1.png" alt="Schimb Anvelope">
+                <h3>Instalare Anvelope</h3>
+                <p>Schimburi sezoniere și montare anvelope noi cu echipamente de ultimă generație.</p>
+            </div>
+            <div class="service-card">
+                <img src="static/2.png" alt="Echilibrare">
+                <h3>Echilibrare Computerizată</h3>
+                <p>Elimină vibrațiile și prelungește durata de viață a anvelopelor cu o echilibrare de precizie.</p>
+            </div>
+<!--            <div class="service-card">
+                <img src="static/3.png" alt="Geometrie">
+                <h3>Geometrie Roți</h3>
+                <p>Asigură-te că mașina ta rulează drept și previne uzura inegală a anvelopelor.</p>
+            </div>
+            <div class="service-card">
+                <img src="static/4.png" alt="Reparație">
+                <h3>Reparație Pană</h3>
+                <p>Reparații sigure și rapide pentru pene și tăieturi accidentale în anvelopă.</p>
+            </div>
+        </div>
+-->
+    </section>
+
+    <footer>
+        <div class="contact-info">
+            <p>📍 str.27 Nr.2, Sofronea, România</p>
+            <p>📞 0723 305 283 | ✉️ ionica_gr@yahoo.com</p>
+            <p>🌐 <a href="https://facebook.com/profile.php?id=61560998346001" target="_blank"
+                    style="color: #3498db; text-decoration: none;">Vizitează-ne pe Facebook</a></p>
+        </div>
+        <p>&copy; 2026 Vulcanizare Sofronea. Toate drepturile rezervate.</p>
+    </footer>
+
+</body>
+
+</html>
