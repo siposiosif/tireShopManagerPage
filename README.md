@@ -1,53 +1,169 @@
-🛠️ Vulcanizare Sofronea - Management System
-A professional, lightweight web application built with Python (Flask) designed for automotive tire service centers. This system streamlines the booking process for customers and provides a secure management portal for business owners to handle appointments.
+# Vulcanizare Sofronea – Online Reservation System
 
-🌟 Key Features
-Customer Booking Engine: A responsive landing page and reservation form where clients can book 30-minute service slots.
+A simple **Flask-based web application** for managing service reservations for an auto vulcanization business. Customers can request appointments online, while admins can confirm or reject reservations and automatically notify customers by email.
 
-Dynamic Scheduling: Real-time availability checks that prevent double-booking by filtering taken slots from a CSV database.
+---
 
-Secure Admin Panel: A protected management area accessible only via authenticated login (Session-based tokens/cookies).
+## 🚀 Features
 
-Manual Entry Support: Allows staff to manually add appointments received via phone calls to keep the schedule synchronized.
+- Online reservation form (date & time selection)
+- Dynamic availability checking (prevents double booking)
+- Admin dashboard for managing reservations
+- Email notifications for confirmation or rejection
+- Google Calendar event link generation
+- CSV-based storage (no database required)
+- Environment variable support for sensitive data
 
-Automated Email Notifications: Sends professional HTML confirmation or rejection emails to customers using SMTP.
+---
 
-Calendar & Maps Integration: Confirmed appointments include a direct Google Calendar invitation link and a Google Maps location link.
+## 🛠️ Tech Stack
 
-💻 Tech Stack
-Backend: Python 3.x, Flask.
+- **Python 3**
+- **Flask**
+- **HTML / Jinja2 templates**
+- **CSV** for data storage
+- **SMTP (Gmail)** for email notifications
+- **python-dotenv** for environment variables
 
-Production Server: Waitress.
+---
 
-Frontend: HTML5, CSS3 (Modern Dark Theme), Vanilla JavaScript.
+## 📁 Project Structure
 
-Data Storage: CSV (Flat-file database).
+```
+.
+├── App.py                 # Main Flask application
+├── reservations.csv       # Reservation storage (auto-generated)
+├── templates/
+│   ├── index.html
+│   ├── rezervation.html
+│   └── admin.html
+├── static/                # CSS / JS / assets (if any)
+├── .env                   # Environment variables (not committed)
+└── README.md
+```
 
-Security: Flask Sessions, Environment Variables (.env).
+---
 
-🚀 Quick Setup
-Clone the repository:
+## ⚙️ Installation & Setup
 
-Bash
+### 1. Clone the repository
+```bash
+git clone https://github.com/your-username/your-repo-name.git
+cd your-repo-name
+```
 
-git clone https://github.com/your-username/vulcanizare-sofronea.git
-cd vulcanizare-sofronea
-Install dependencies:
+### 2. Create a virtual environment (recommended)
+```bash
+python -m venv venv
+source venv/bin/activate  # Windows: venv\Scripts\activate
+```
 
-Bash
+### 3. Install dependencies
+```bash
+pip install flask python-dotenv
+```
 
-pip install flask python-dotenv waitress
-Configure Environment: Create a .env file in the root directory and add:
+### 4. Configure environment variables
+Create a `.env` file in the project root:
 
-Fragment de cod
+```env
+SECRET_KEY=your_secret_key
+EMAIL_USER=your_gmail_address@gmail.com
+EMAIL_PASS=your_gmail_app_password
+```
 
-ADMIN_USER=admin
-ADMIN_PASS=your_secure_password
-SECRET_KEY=your_random_secret_key
-EMAIL_USER=your_gmail@gmail.com
-EMAIL_PASS=your_16_char_app_password
-Run with Waitress:
+> ⚠️ **Important:** Use a Gmail *App Password*, not your regular Gmail password.
 
-Bash
+---
 
-waitress-serve --port=8000 App:app
+## ▶️ Running the Application
+
+```bash
+python App.py
+```
+
+The app will be available at:
+```
+http://127.0.0.1:5000
+```
+
+---
+
+## 🌐 Routes Overview
+
+| Route | Description |
+|------|------------|
+| `/` | Home page |
+| `/rezervation` | Reservation form |
+| `/get_slots` | Fetch unavailable time slots (AJAX) |
+| `/submit_reservation` | Submit reservation (POST) |
+| `/admin` | Admin dashboard |
+| `/update_status/<id>/<action>` | Confirm or reject reservation |
+
+---
+
+## 📧 Email Notifications
+
+- **Confirmed reservations** receive:
+  - Confirmation email
+  - Google Calendar event link
+
+- **Rejected reservations** receive:
+  - Cancellation email
+
+Emails are sent automatically via Gmail SMTP.
+
+---
+
+## 🧾 Data Storage
+
+All reservations are stored in:
+```
+reservations.csv
+```
+
+Fields:
+- id
+- timestamp
+- nume
+- email
+- telefon
+- marca
+- model
+- serviciu
+- data_pref
+- ora_pref
+- status
+
+---
+
+## 🔒 Security Notes
+
+- Do **not** commit your `.env` file
+- Restrict `/admin` route or protect it with authentication for production use
+- This app is intended for **small businesses / local use**
+
+---
+
+## 📌 Future Improvements
+
+- Authentication for admin panel
+- Database integration (SQLite / PostgreSQL)
+- SMS notifications
+- Multi-language support
+- Deployment with Docker
+
+---
+
+## 📄 License
+
+This project is licensed under the **MIT License**.
+
+---
+
+## 👨‍💻 Author
+
+Developed for **Vulcanizare Sofronea** 🚗
+
+Feel free to fork, improve, and adapt this project.
+
