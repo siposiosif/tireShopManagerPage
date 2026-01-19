@@ -29,7 +29,7 @@
 
         <div class="manual-entry">
             <h2>➕ Adaugă Programare Manuală (Apel Telefon)</h2>
-            <form action="/add_manual_reservation" method="POST">
+            <form action="/add_manual_reservation?token={{ token }}" method="POST">
                 <div class="form-row">
                     <input type="text" name="name" placeholder="Nume Client" required>
                     <input type="tel" name="phone" placeholder="Telefon" required>
@@ -74,8 +74,8 @@
                     </td>
                     <td>
                         {% if res.status == 'In asteptare' %}
-                        <a href="/update_status/{{ res.id }}/confirm" class="btn-confirm">Confirmă</a>
-                        <a href="/update_status/{{ res.id }}/reject" class="btn-reject">Respinge</a>
+                        <a href="/update_status/{{ res.id }}/confirm?token={{ token }}" class="btn-confirm">Confirmă</a>
+                        <a href="/update_status/{{ res.id }}/reject?token={{ token }}" class="btn-reject">Respinge</a>
                         {% else %}
                         -
                         {% endif %}
