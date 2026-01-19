@@ -311,6 +311,18 @@ body.page-admin .admin-container {
     margin: auto;
 }
 
+body.page-admin .admin-actions {
+    margin: 10px 0 20px;
+}
+
+body.page-admin .message {
+    background: #2c3e50;
+    border: 1px solid #34495e;
+    padding: 10px 15px;
+    border-radius: 4px;
+    margin: 15px 0;
+}
+
 body.page-admin h1 {
     color: #3498db;
     border-bottom: 2px solid #3498db;

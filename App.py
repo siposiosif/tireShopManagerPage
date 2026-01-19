@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect, url_for, jsonify
+from flask import Flask, render_template, request, redirect, url_for, jsonify, make_response
 import csv
 import os
 import json
@@ -8,6 +8,8 @@ from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 from datetime import datetime, timedelta
 from dotenv import load_dotenv
+from itsdangerous import URLSafeTimedSerializer, BadSignature, SignatureExpired
+from werkzeug.security import check_password_hash, generate_password_hash
 
 # 1. Load Environment Variables
 load_dotenv()
@@ -18,6 +20,16 @@ app = Flask(__name__)
 app.secret_key = os.getenv("SECRET_KEY", "fallback-if-not-found")
 EMAIL_USER = os.getenv("EMAIL_USER")
 EMAIL_PASS = os.getenv("EMAIL_PASS")
+ADMIN_EMAIL = os.getenv("ADMIN_EMAIL")
+ADMIN_USERNAME = os.getenv("ADMIN_USERNAME", "admin")
+ADMIN_PASSWORD = os.getenv("ADMIN_PASSWORD")
+ADMIN_PASSWORD_HASH = os.getenv("ADMIN_PASSWORD_HASH")
+
+ADMIN_CREDENTIALS_FILE = "admin_credentials.json"
+ADMIN_TOKEN_COOKIE = "admin_token"
+ADMIN_TOKEN_TTL_DAYS = 7
+ADMIN_TOKEN_SALT = "admin-auth-token"
+ADMIN_RESET_SALT = "admin-password-reset"
 
 CSV_FILE = 'reservations.csv' # Defined globally for all routes
 ARCHIVE_FILE = 'reservations_archive.csv'
@@ -121,15 +133,86 @@ def send_professional_email(to_email, subject, html_content):
         print(f"Eroare email: {e}")
         return False
 
-def is_local_request():
-    return request.remote_addr in {"127.0.0.1", "::1"}
+def _serializer():
+    return URLSafeTimedSerializer(app.secret_key)
 
-def require_admin_access():
-    if not is_local_request():
+def load_admin_credentials():
+    if os.path.exists(ADMIN_CREDENTIALS_FILE):
+        with open(ADMIN_CREDENTIALS_FILE, "r", encoding="utf-8") as f:
+            return json.load(f)
+
+    if ADMIN_PASSWORD_HASH or ADMIN_PASSWORD:
+        password_hash = ADMIN_PASSWORD_HASH or generate_password_hash(ADMIN_PASSWORD)
+        credentials = {
+            "username": ADMIN_USERNAME,
+            "password_hash": password_hash,
+            "password_updated_at": datetime.utcnow().isoformat()
+        }
+        save_admin_credentials(credentials)
+        return credentials
+    return None
+
+def save_admin_credentials(credentials):
+    with open(ADMIN_CREDENTIALS_FILE, "w", encoding="utf-8") as f:
+        json.dump(credentials, f, indent=2)
+
+def generate_admin_token(credentials):
+    payload = {
+        "username": credentials["username"],
+        "password_updated_at": credentials["password_updated_at"]
+    }
+    return _serializer().dumps(payload, salt=ADMIN_TOKEN_SALT)
+
+def _get_token_from_request():
+    token = request.cookies.get(ADMIN_TOKEN_COOKIE)
+    if token:
+        return token
+    token = request.headers.get("X-Admin-Token")
+    if token:
+        return token
+    auth_header = request.headers.get("Authorization", "")
+    if auth_header.lower().startswith("bearer "):
+        return auth_header.split(" ", 1)[1].strip()
+    return None
+
+def is_admin_authenticated():
+    token = _get_token_from_request()
+    if not token:
         return False
-    token = request.args.get("token") or request.headers.get("X-Admin-Token")
-    admin_token = os.getenv("ADMIN_TOKEN")
-    return bool(admin_token and token == admin_token)
+    credentials = load_admin_credentials()
+    if not credentials:
+        return False
+    try:
+        payload = _serializer().loads(
+            token,
+            salt=ADMIN_TOKEN_SALT,
+            max_age=ADMIN_TOKEN_TTL_DAYS * 24 * 60 * 60
+        )
+    except (BadSignature, SignatureExpired):
+        return False
+    return payload.get("username") == credentials.get("username") and payload.get(
+        "password_updated_at"
+    ) == credentials.get("password_updated_at")
+
+def build_admin_auth_response(response):
+    credentials = load_admin_credentials()
+    token = generate_admin_token(credentials)
+    max_age = ADMIN_TOKEN_TTL_DAYS * 24 * 60 * 60
+    response.set_cookie(
+        ADMIN_TOKEN_COOKIE,
+        token,
+        max_age=max_age,
+        httponly=True,
+        samesite="Lax"
+    )
+    return response
+
+def admin_login_required():
+    if is_admin_authenticated():
+        return None
+    if request.path.startswith("/api"):
+        return jsonify({"error": "Unauthorized"}), 403
+    return redirect(url_for("admin_login"))
 
 def parse_timestamp(timestamp_str):
     if not timestamp_str:
@@ -220,6 +303,93 @@ def api_services():
 @app.route('/rezervation')
 def rezervation():
     return render_template('rezervation.html')
+
+@app.route('/admin/login', methods=['GET', 'POST'])
+def admin_login():
+    credentials = load_admin_credentials()
+    if not credentials:
+        return render_template('admin_login.html', msg="Configurați ADMIN_PASSWORD înainte de autentificare.")
+    if request.method == 'POST':
+        username = request.form.get('username', '').strip()
+        password = request.form.get('password', '')
+        if username != credentials.get("username") or not check_password_hash(
+            credentials.get("password_hash", ""),
+            password
+        ):
+            return render_template('admin_login.html', msg="Date de autentificare invalide.")
+        response = make_response(redirect(url_for('admin')))
+        return build_admin_auth_response(response)
+    if is_admin_authenticated():
+        return redirect(url_for('admin'))
+    return render_template('admin_login.html', msg=request.args.get("msg"))
+
+@app.route('/admin/logout')
+def admin_logout():
+    response = make_response(redirect(url_for('admin_login')))
+    response.delete_cookie(ADMIN_TOKEN_COOKIE)
+    return response
+
+@app.route('/admin/reset', methods=['GET', 'POST'])
+def admin_reset_request():
+    credentials = load_admin_credentials()
+    if request.method == 'POST':
+        if not credentials:
+            return render_template('admin_reset_request.html', msg="Nu există cont admin configurat.")
+        email = request.form.get('email', '').strip()
+        reset_link = None
+        if ADMIN_EMAIL and email.lower() == ADMIN_EMAIL.lower():
+            payload = {
+                "username": credentials["username"],
+                "password_updated_at": credentials["password_updated_at"]
+            }
+            token = _serializer().dumps(payload, salt=ADMIN_RESET_SALT)
+            reset_link = url_for('admin_reset_form', token=token, _external=True)
+            email_body = (
+                f"<p>Folosiți linkul de mai jos pentru resetarea parolei:</p>"
+                f"<p><a href='{reset_link}'>{reset_link}</a></p>"
+            )
+            if EMAIL_USER and EMAIL_PASS:
+                send_professional_email(ADMIN_EMAIL, "Resetare parolă admin", email_body)
+        return render_template(
+            'admin_reset_request.html',
+            msg="Dacă emailul este corect, vei primi un link de resetare.",
+            reset_link=reset_link
+        )
+    return render_template('admin_reset_request.html')
+
+@app.route('/admin/reset/<token>', methods=['GET', 'POST'])
+def admin_reset_form(token):
+    credentials = load_admin_credentials()
+    if not credentials:
+        return render_template('admin_reset_form.html', msg="Nu există cont admin configurat.", token=token)
+    try:
+        payload = _serializer().loads(token, salt=ADMIN_RESET_SALT, max_age=24 * 60 * 60)
+    except (BadSignature, SignatureExpired):
+        return render_template('admin_reset_form.html', msg="Linkul de resetare este invalid sau expirat.", token=token)
+    if payload.get("username") != credentials.get("username") or payload.get(
+        "password_updated_at"
+    ) != credentials.get("password_updated_at"):
+        return render_template('admin_reset_form.html', msg="Linkul de resetare nu mai este valid.", token=token)
+    if request.method == 'POST':
+        new_password = request.form.get('password', '')
+        confirm_password = request.form.get('confirm_password', '')
+        if len(new_password) < 8:
+            return render_template(
+                'admin_reset_form.html',
+                msg="Parola trebuie să aibă cel puțin 8 caractere.",
+                token=token
+            )
+        if new_password != confirm_password:
+            return render_template(
+                'admin_reset_form.html',
+                msg="Parolele nu coincid.",
+                token=token
+            )
+        credentials["password_hash"] = generate_password_hash(new_password)
+        credentials["password_updated_at"] = datetime.utcnow().isoformat()
+        save_admin_credentials(credentials)
+        return redirect(url_for('admin_login', msg="Parola a fost resetată. Autentificați-vă din nou."))
+    return render_template('admin_reset_form.html', token=token)
 
 @app.route('/get_slots')
 def get_slots():
@@ -375,10 +545,9 @@ def submit_reservation():
 
 @app.route('/admin')
 def admin():
-    token = request.args.get("token") or request.headers.get("X-Admin-Token")
-    admin_token = os.getenv("ADMIN_TOKEN")
-    if not (admin_token and token == admin_token):
-        return ("Not Found", 404)
+    auth_response = admin_login_required()
+    if auth_response:
+        return auth_response
     reservations = load_reservations()
     remaining, archived = archive_old_reservations(reservations)
     if archived or len(remaining) != len(reservations):
@@ -391,19 +560,17 @@ def admin():
     pending_count = sum(1 for res in reservations if res.get('status') == 'In asteptare')
     latest_timestamp = max([res.get('timestamp', '') for res in reservations]) if reservations else ''
     
-    return render_template('admin.html', 
-                         reservations=reservations, 
-                         token=token, 
-                         services=services,
-                         pending_count=pending_count,
-                         latest_timestamp=latest_timestamp)
+    return render_template('admin.html',
+                           reservations=reservations,
+                           services=services,
+                           pending_count=pending_count,
+                           latest_timestamp=latest_timestamp)
 
 @app.route('/update_status/<id>/<action>')
 def update_status(id, action):
-    token = request.args.get("token") or request.headers.get("X-Admin-Token")
-    admin_token = os.getenv("ADMIN_TOKEN")
-    if not (admin_token and token == admin_token):
-        return ("Not Found", 404)
+    auth_response = admin_login_required()
+    if auth_response:
+        return auth_response
     rows = load_reservations()
     if not rows:
         return redirect(url_for('admin', token=request.args.get('token')))
@@ -426,14 +593,13 @@ def update_status(id, action):
     remaining, archived = archive_old_reservations(rows)
     save_reservations(remaining)
     append_archived(archived)
-    return redirect(url_for('admin', token=request.args.get('token')))
+    return redirect(url_for('admin'))
 
 @app.route('/add_manual_reservation', methods=['POST'])
 def add_manual_reservation():
-    token = request.args.get("token") or request.headers.get("X-Admin-Token")
-    admin_token = os.getenv("ADMIN_TOKEN")
-    if not (admin_token and token == admin_token):
-        return ("Not Found", 404)
+    auth_response = admin_login_required()
+    if auth_response:
+        return auth_response
     data = {
         "id": datetime.now().strftime("%Y%m%d%H%M%S"),
         "timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
@@ -451,14 +617,13 @@ def add_manual_reservation():
     rows = load_reservations()
     rows.append(data)
     save_reservations(rows)
-    return redirect(url_for('admin', token=request.args.get('token')))
+    return redirect(url_for('admin'))
 
 @app.route('/api/services', methods=['POST'])
 def api_add_service():
-    token = request.args.get("token") or request.headers.get("X-Admin-Token")
-    admin_token = os.getenv("ADMIN_TOKEN")
-    if not (admin_token and token == admin_token):
-        return jsonify({"error": "Unauthorized"}), 403
+    auth_response = admin_login_required()
+    if auth_response:
+        return auth_response
     
     data = request.get_json()
     services = load_services()
@@ -482,10 +647,9 @@ def api_add_service():
 
 @app.route('/api/services/<service_id>', methods=['DELETE'])
 def api_delete_service(service_id):
-    token = request.args.get("token") or request.headers.get("X-Admin-Token")
-    admin_token = os.getenv("ADMIN_TOKEN")
-    if not (admin_token and token == admin_token):
-        return jsonify({"error": "Unauthorized"}), 403
+    auth_response = admin_login_required()
+    if auth_response:
+        return auth_response
     
     services = load_services()
     services = [s for s in services if s['id'] != service_id]
@@ -495,10 +659,9 @@ def api_delete_service(service_id):
 
 @app.route('/api/services/<service_id>/price', methods=['PUT'])
 def api_update_service_price(service_id):
-    token = request.args.get("token") or request.headers.get("X-Admin-Token")
-    admin_token = os.getenv("ADMIN_TOKEN")
-    if not (admin_token and token == admin_token):
-        return jsonify({"error": "Unauthorized"}), 403
+    auth_response = admin_login_required()
+    if auth_response:
+        return auth_response
     
     data = request.get_json()
     new_price = data.get('price', 0)
@@ -514,10 +677,9 @@ def api_update_service_price(service_id):
 
 @app.route('/api/reservations/updates')
 def api_reservations_updates():
-    token = request.args.get("token") or request.headers.get("X-Admin-Token")
-    admin_token = os.getenv("ADMIN_TOKEN")
-    if not (admin_token and token == admin_token):
-        return jsonify({"error": "Unauthorized"}), 403
+    auth_response = admin_login_required()
+    if auth_response:
+        return auth_response
     
     reservations = load_reservations()
     remaining, archived = archive_old_reservations(reservations)

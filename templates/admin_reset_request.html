@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+    <meta charset="UTF-8">
+    <title>Resetare Parolă Admin | Vulcanizare Sofronea</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body class="page-admin">
+    <div class="admin-container">
+        <h1>Resetare Parolă Admin</h1>
+        {% if msg %}
+            <p class="message">{{ msg }}</p>
+        {% endif %}
+        <form method="POST" action="/admin/reset">
+            <div class="form-row">
+                <input type="email" name="email" placeholder="Email admin" required>
+                <button type="submit" class="btn-add">Trimite link</button>
+            </div>
+        </form>
+        {% if reset_link %}
+            <p>Link resetare:</p>
+            <p><a href="{{ reset_link }}">{{ reset_link }}</a></p>
+        {% endif %}
+        <p>
+            <a href="/admin/login">Înapoi la autentificare</a>
+        </p>
+    </div>
+</body>
+</html>
