@@ -9,6 +9,8 @@ A simple **Flask-based web application** for managing service reservations for a
 - Online reservation form (date & time selection)
 - Dynamic availability checking (prevents double booking)
 - Admin dashboard for managing reservations
+- Token-based admin login (7-day session)
+- Password reset flow with emailed reset link
 - Email notifications for confirmation or rejection
 - Google Calendar event link generation
 - CSV-based storage (no database required)
@@ -36,7 +38,10 @@ A simple **Flask-based web application** for managing service reservations for a
 ├── templates/
 │   ├── index.html
 │   ├── rezervation.html
-│   └── admin.html
+│   ├── admin.html
+│   ├── admin_login.html
+│   ├── admin_reset_form.html
+│   └── admin_reset_request.html
 ├── static/                # CSS / JS / assets (if any)
 ├── .env                   # Environment variables (not committed)
 └── README.md
@@ -70,6 +75,9 @@ Create a `.env` file in the project root:
 SECRET_KEY=your_secret_key
 EMAIL_USER=your_gmail_address@gmail.com
 EMAIL_PASS=your_gmail_app_password
+ADMIN_USERNAME=admin
+ADMIN_PASSWORD=your_strong_password
+ADMIN_EMAIL=admin@example.com
 ```
 
 > ⚠️ **Important:** Use a Gmail *App Password*, not your regular Gmail password.
@@ -98,6 +106,10 @@ http://127.0.0.1:5000
 | `/get_slots` | Fetch unavailable time slots (AJAX) |
 | `/submit_reservation` | Submit reservation (POST) |
 | `/admin` | Admin dashboard |
+| `/admin/login` | Admin login |
+| `/admin/logout` | Admin logout |
+| `/admin/reset` | Password reset request |
+| `/admin/reset/<token>` | Password reset form |
 | `/update_status/<id>/<action>` | Confirm or reject reservation |
 
 ---
@@ -140,7 +152,8 @@ Fields:
 ## 🔒 Security Notes
 
 - Do **not** commit your `.env` file
-- Restrict `/admin` route or protect it with authentication for production use
+- `/admin` is protected by a login that issues a signed token stored in a cookie for 7 days.
+- Password reset links are valid for 24 hours and are sent to the configured `ADMIN_EMAIL`.
 - This app is intended for **small businesses / local use**
 
 ---
@@ -166,4 +179,3 @@ This project is licensed under the **MIT License**.
 Developed for **Vulcanizare Sofronea** 🚗
 
 Feel free to fork, improve, and adapt this project.
-

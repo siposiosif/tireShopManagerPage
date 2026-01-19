@@ -101,10 +101,13 @@
                 <span id="pending-count" style="display: none;"></span>
             </span>
         </h1>
+        <div class="admin-actions">
+            <a href="/admin/logout" class="btn-reject">Deconectare</a>
+        </div>
 
         <div class="manual-entry">
             <h2>➕ Adaugă Programare Manuală (Apel Telefon)</h2>
-            <form action="/add_manual_reservation?token={{ token }}" method="POST">
+            <form action="/add_manual_reservation" method="POST">
                 <div class="form-row">
                     <input type="text" name="name" placeholder="Nume Client" required>
                     <input type="tel" name="phone" placeholder="Telefon" required>
@@ -197,8 +200,8 @@
                     </td>
                     <td>
                         {% if res.status == 'In asteptare' %}
-                        <a href="/update_status/{{ res.id }}/confirm?token={{ token }}" class="btn-confirm">Confirmă</a>
-                        <a href="/update_status/{{ res.id }}/reject?token={{ token }}" class="btn-reject">Respinge</a>
+                        <a href="/update_status/{{ res.id }}/confirm" class="btn-confirm">Confirmă</a>
+                        <a href="/update_status/{{ res.id }}/reject" class="btn-reject">Respinge</a>
                         {% else %}
                         -
                         {% endif %}
@@ -218,9 +221,6 @@
     </div>
 
     <script>
-        // Pass token from server to JavaScript
-        const adminToken = "{{ token }}";
-        
         // Global variables for auto-refresh and notifications
         let lastReservationCount = parseInt("{{ reservations|length }}");
         let lastPendingCount = parseInt("{{ pending_count or 0 }}");
@@ -317,7 +317,7 @@
             }
 
             function loadServices() {
-                fetch(`/api/services?token=${adminToken}`)
+                fetch(`/api/services`)
                     .then(res => res.json())
                     .then(services => {
                         // Update service list
@@ -375,14 +375,14 @@
             }
 
             function deleteService(serviceId) {
-                fetch(`/api/services/${serviceId}?token=${adminToken}`, { method: 'DELETE' })
+                fetch(`/api/services/${serviceId}`, { method: 'DELETE' })
                     .then(res => res.json())
                     .then(() => loadServices())
                     .catch(err => alert('Eroare la ștergerea serviciului'));
             }
 
             function updateServicePrice(serviceId, newPrice) {
-                fetch(`/api/services/${serviceId}/price?token=${adminToken}`, {
+                fetch(`/api/services/${serviceId}/price`, {
                     method: 'PUT',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ price: newPrice })
@@ -428,7 +428,7 @@
                 submitBtn.disabled = true;
                 submitBtn.textContent = 'Se adaugă...';
 
-                fetch(`/api/services?token=${adminToken}`, {
+                fetch(`/api/services`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(serviceData)
@@ -485,7 +485,7 @@
             isRefreshing = true;
             updateRefreshIndicator(true, 'Checking...');
             
-            fetch(`/api/reservations/updates?token=${adminToken}`)
+            fetch(`/api/reservations/updates`)
                 .then(res => res.json())
                 .then(data => {
                     const newPendingCount = data.pending_count;
@@ -564,8 +564,8 @@
                     </td>
                     <td>
                         ${res.status === 'In asteptare' ? 
-                            `<a href="/update_status/${res.id}/confirm?token=${adminToken}" class="btn-confirm">Confirmă</a>
-                             <a href="/update_status/${res.id}/reject?token=${adminToken}" class="btn-reject">Respinge</a>` :
+                            `<a href="/update_status/${res.id}/confirm" class="btn-confirm">Confirmă</a>
+                             <a href="/update_status/${res.id}/reject" class="btn-reject">Respinge</a>` :
                             '-'}
                     </td>
                 `;
