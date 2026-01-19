@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+    <meta charset="UTF-8">
+    <title>Autentificare Admin | Vulcanizare Sofronea</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body class="page-admin">
+    <div class="admin-container">
+        <h1>Autentificare Admin</h1>
+        {% if msg %}
+            <p class="message">{{ msg }}</p>
+        {% endif %}
+        <form method="POST" action="/admin/login">
+            <div class="form-row">
+                <input type="text" name="username" placeholder="Utilizator" required>
+                <input type="password" name="password" placeholder="Parolă" required>
+                <button type="submit" class="btn-add">Autentificare</button>
+            </div>
+        </form>
+        <p>
+            <a href="/admin/reset">Ai uitat parola?</a>
+        </p>
+    </div>
+</body>
+</html>
