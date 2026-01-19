@@ -1,0 +1,18 @@
+{
+  "services": [
+    {
+      "id": "tire-change",
+      "name": "Schimb Anvelope Sezonier",
+      "duration": 60,
+      "price": 0.0,
+      "description": "Schimb complet al anvelopelor pentru sezonul curent"
+    },
+    {
+      "id": "balancing",
+      "name": "Echilibrare Roți",
+      "duration": 30,
+      "price": 0.0,
+      "description": "Echilibrare profesională a roților"
+    }
+  ]
+}

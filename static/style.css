@@ -376,6 +376,17 @@ body.page-admin th {
     background: #3498db;
 }
 
+body.page-admin th.sortable {
+    cursor: pointer;
+    user-select: none;
+    position: relative;
+    transition: background-color 0.2s;
+}
+
+body.page-admin th.sortable:hover {
+    background: #2980b9;
+}
+
 body.page-admin .btn-confirm {
     background: #2ecc71;
     color: white;
@@ -392,4 +403,231 @@ body.page-admin .btn-reject {
     text-decoration: none;
     border-radius: 3px;
     font-size: 0.8rem;
+}
+
+body.page-admin .service-management {
+    background: #252525;
+    padding: 20px;
+    margin-top: 20px;
+    border-radius: 8px;
+}
+
+body.page-admin .service-management h2 {
+    color: #3498db;
+    margin-bottom: 15px;
+}
+
+body.page-admin .service-list {
+    margin-bottom: 20px;
+}
+
+body.page-admin .service-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px;
+    background: #333;
+    margin-bottom: 8px;
+    border-radius: 4px;
+}
+
+body.page-admin .service-info {
+    flex: 1;
+}
+
+body.page-admin .service-actions {
+    flex: 0 0 auto;
+}
+
+body.page-admin .btn-delete {
+    background: #e74c3c;
+    color: white;
+    border: none;
+    padding: 5px 10px;
+    border-radius: 3px;
+    cursor: pointer;
+    font-size: 0.8rem;
+}
+
+body.page-admin .add-service-form {
+    background: #333;
+    padding: 15px;
+    border-radius: 4px;
+}
+
+body.page-admin .add-service-form h3 {
+    color: #3498db;
+    margin-bottom: 10px;
+}
+
+/* Price Summary Styles */
+.price-summary {
+    background: #f8f9fa;
+    border: 1px solid #dee2e6;
+    border-radius: 8px;
+    padding: 20px;
+    margin-top: 10px;
+}
+
+.price-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+    padding: 8px 0;
+    border-bottom: 1px solid #e9ecef;
+}
+
+.price-row.total {
+    border-bottom: none;
+    border-top: 2px solid #3498db;
+    margin-top: 15px;
+    padding-top: 15px;
+    font-weight: bold;
+    font-size: 1.1em;
+}
+
+.price-label {
+    color: #495057;
+}
+
+.price-value {
+    color: #28a745;
+    font-weight: bold;
+}
+
+.price-note {
+    font-size: 0.9em;
+    color: #6c757d;
+    margin-top: 15px;
+    font-style: italic;
+}
+
+/* Services Container Styles */
+.services-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 15px;
+    margin-top: 10px;
+}
+
+.service-checkbox-item {
+    display: flex;
+    align-items: center;
+    padding: 12px;
+    border: 1px solid #dee2e6;
+    border-radius: 8px;
+    background: #f8f9fa;
+    transition: all 0.3s ease;
+}
+
+.service-checkbox-item:hover {
+    border-color: #3498db;
+    background: #e3f2fd;
+}
+
+.service-checkbox-item input[type="checkbox"] {
+    margin-right: 10px;
+    transform: scale(1.2);
+}
+
+.service-info {
+    flex: 1;
+}
+
+.service-name {
+    font-weight: bold;
+    color: #495057;
+    margin-bottom: 2px;
+}
+
+.service-details {
+    font-size: 0.9em;
+    color: #6c757d;
+}
+
+.service-price {
+    font-weight: bold;
+    color: #28a745;
+}
+
+/* New Service Selection Styles */
+.selected-services-display {
+    margin-bottom: 15px;
+    min-height: 40px;
+}
+
+.no-services {
+    color: #6c757d;
+    font-style: italic;
+    margin: 0;
+    padding: 10px 0;
+}
+
+.selected-service-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 12px;
+    margin-bottom: 5px;
+    background: #f8f9fa;
+    border: 1px solid #dee2e6;
+    border-radius: 4px;
+}
+
+.selected-service-info {
+    flex: 1;
+}
+
+.selected-service-price {
+    font-weight: bold;
+    color: #28a745;
+}
+
+.remove-service-btn {
+    background: #dc3545;
+    color: white;
+    border: none;
+    border-radius: 3px;
+    padding: 4px 8px;
+    cursor: pointer;
+    font-size: 12px;
+}
+
+.remove-service-btn:hover {
+    background: #c82333;
+}
+
+.service-selection {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
+
+.service-selection select {
+    flex: 1;
+    padding: 8px 12px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 14px;
+}
+
+.btn-add-service {
+    background: #28a745;
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: background 0.3s;
+}
+
+.btn-add-service:hover {
+    background: #218838;
+}
+
+.btn-add-service:disabled {
+    background: #6c757d;
+    cursor: not-allowed;
 }

@@ -1,0 +1,9 @@
+id,timestamp,nume,email,telefon,marca,model,serviciu,data_pref,ora_pref,status,status_updated,archived_at,archive_reason
+20260115090001,2026-01-15 09:00:01,Vasile Moldovan,vasile.moldovan@email.com,0751234567,Skoda,Octavia,Schimb anvelope,2026-01-18,10:00,Confirmat,2026-01-15 09:30:00,2026-01-19 20:23:19,confirmat_peste_8_ore
+20260114080002,2026-01-14 08:00:02,Irina Nicolae,irina.nicolae@email.com,0752345678,Toyota,Corolla,Reparatie cauciuc,2026-01-17,14:30,Respins,2026-01-14 16:00:00,2026-01-19 20:23:19,respins_peste_24_ore
+20260113070003,2026-01-13 07:00:03,Mihai Popa,mihai.popa@email.com,0753456789,Honda,Civic,Balansare roti,2026-01-16,09:00,Respins,2026-01-19 20:23:19,2026-01-19 20:23:19,expirat_ora_programarii
+20260112060004,2026-01-12 06:00:04,Sorina Dumitru,sorina.dumitru@email.com,0754567890,Nissan,Qashqai,Verificare presiune,2026-01-15,11:30,Respins,2026-01-19 20:23:19,2026-01-19 20:23:19,expirat_ora_programarii
+20260118090005,2026-01-18 09:00:05,Radu Stefan,radu.stefan@email.com,0755678901,Peugeot,308,Schimb ulei,2026-01-18,12:00,Confirmat,2026-01-18 09:15:00,2026-01-19 20:23:19,confirmat_peste_8_ore
+20260117080006,2026-01-17 08:00:06,Carmen Iacob,carmen.iacob@email.com,0756789012,Citroen,C4,Reparatie pana,2026-01-17,16:00,Respins,2026-01-17 14:30:00,2026-01-19 20:23:19,respins_peste_24_ore
+20260116070007,2026-01-16 07:00:07,Florin Gheorghe,florin.gheorghe@email.com,0757890123,Hyundai,i30,Verificare geometrie,2026-01-18,08:30,Respins,2026-01-19 20:23:19,2026-01-19 20:23:19,expirat_ora_programarii
+20260119211858,2026-01-19 21:18:58,asd,sipos.iosif@cicor.com,0770220967,volkswagen,2013,"shimb_ulei,tire-change,balancing",2026-01-19,15:30,Respins,2026-01-19 21:19:24,,2026-01-19 21:19:24,expirat_ora_programarii

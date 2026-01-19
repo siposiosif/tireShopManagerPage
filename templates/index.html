@@ -27,29 +27,9 @@
 
     <section id="services" class="services">
         <h2>Serviciile Noastre Profesionale</h2>
-        <div class="service-grid">
-            <div class="service-card">
-                <img src="static/1.png" alt="Schimb Anvelope">
-                <h3>Instalare Anvelope</h3>
-                <p>Schimburi sezoniere și montare anvelope noi cu echipamente de ultimă generație.</p>
-            </div>
-            <div class="service-card">
-                <img src="static/2.png" alt="Echilibrare">
-                <h3>Echilibrare Computerizată</h3>
-                <p>Elimină vibrațiile și prelungește durata de viață a anvelopelor cu o echilibrare de precizie.</p>
-            </div>
-<!--            <div class="service-card">
-                <img src="static/3.png" alt="Geometrie">
-                <h3>Geometrie Roți</h3>
-                <p>Asigură-te că mașina ta rulează drept și previne uzura inegală a anvelopelor.</p>
-            </div>
-            <div class="service-card">
-                <img src="static/4.png" alt="Reparație">
-                <h3>Reparație Pană</h3>
-                <p>Reparații sigure și rapide pentru pene și tăieturi accidentale în anvelopă.</p>
-            </div>
+        <div class="service-grid" id="service-grid">
+            <!-- Services will be loaded dynamically -->
         </div>
--->
     </section>
 
     <footer>
@@ -61,6 +41,52 @@
         </div>
         <p>&copy; 2026 Vulcanizare Sofronea. Toate drepturile rezervate.</p>
     </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const serviceGrid = document.getElementById('service-grid');
+            
+            fetch('/api/services')
+                .then(res => res.json())
+                .then(services => {
+                    serviceGrid.innerHTML = '';
+                    
+                    services.forEach(service => {
+                        const serviceCard = document.createElement('div');
+                        serviceCard.className = 'service-card';
+                        
+                        // Use different icons based on service type
+                        let iconSrc = 'static/service.png'; // default
+                        if (service.id === 'tire-change') iconSrc = 'static/1.png';
+                        else if (service.id === 'balancing') iconSrc = 'static/2.png';
+                        
+                        serviceCard.innerHTML = `
+                            <img src="${iconSrc}" alt="${service.name}">
+                            <h3>${service.name}</h3>
+                            <p>${service.description || 'Serviciu profesional oferit de echipa noastră.'}</p>
+                            <small>Durată: ${service.duration} minute</small>
+                        `;
+                        
+                        serviceGrid.appendChild(serviceCard);
+                    });
+                })
+                .catch(err => {
+                    console.log('Could not load services, showing defaults');
+                    serviceGrid.innerHTML = `
+                        <div class="service-card">
+                            <img src="static/1.png" alt="Schimb Anvelope">
+                            <h3>Instalare Anvelope</h3>
+                            <p>Schimburi sezoniere și montare anvelope noi cu echipamente de ultimă generație.</p>
+                        </div>
+                        <div class="service-card">
+                            <img src="static/2.png" alt="Echilibrare">
+                            <h3>Echilibrare Computerizată</h3>
+                            <p>Elimină vibrațiile și prelungește durata de viață a anvelopelor cu o echilibrare de precizie.</p>
+                        </div>
+                    `;
+                });
+        });
+    </script>
 
 </body>
 

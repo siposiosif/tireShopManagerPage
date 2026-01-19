@@ -1,0 +1,18 @@
+id,timestamp,nume,email,telefon,marca,model,serviciu,data_pref,ora_pref,status,status_updated,pret
+20260119100001,2026-01-19 10:00:01,Ion Popescu,ion.popescu@email.com,0741234567,Volkswagen,Golf,Schimb anvelope,2026-01-20,09:00,In asteptare,2026-01-19 10:00:01,
+20260119110002,2026-01-19 11:00:02,Maria Ionescu,maria.ionescu@email.com,0742345678,Dacia,Sandero,Reparatie cauciuc,2026-01-21,10:30,Confirmat,2026-01-19 11:15:00,
+20260119120003,2026-01-19 12:00:03,Andrei Vasile,andrei.vasile@email.com,0743456789,BMW,X3,Balansare roti,2026-01-22,14:00,In asteptare,2026-01-19 12:00:03,
+20260119130004,2026-01-19 13:00:04,Elena Dumitrescu,elena.dumitrescu@email.com,0744567890,Audi,A4,Verificare presiune,2026-01-23,11:00,Respins,2026-01-19 15:30:00,
+20260119140005,2026-01-19 14:00:05,George Stan,george.stan@email.com,0745678901,Mercedes,C-Class,Schimb ulei,2026-01-24,08:00,Confirmat,2026-01-19 14:30:00,
+20260119150006,2026-01-19 15:00:06,Ana Mihai,ana.mihai@email.com,0746789012,Renault,Clio,Reparatie pana,2026-01-25,13:30,In asteptare,2026-01-19 15:00:06,
+20260119160007,2026-01-19 16:00:07,Cristian Radu,cristian.radu@email.com,0747890123,Ford,Focus,Verificare geometrie,2026-01-26,16:00,Confirmat,2026-01-19 16:45:00,
+20260119170008,2026-01-19 17:00:08,Laura Popa,laura.popa@email.com,0748901234,Opel,Astra,Schimb jante,2026-01-27,09:30,In asteptare,2026-01-19 17:00:08,
+20260119201759,2026-01-19 20:17:59,asd,sipos.iosif@cicor.com,0770220967,volkswagen,2013,balancing,2026-01-22,09:30,In asteptare,2026-01-19 20:17:59,
+20260119201817,2026-01-19 20:18:17,asd,sipos.iosif@cicor.com,0770220967,volkswagen,2013,balancing,2026-01-22,09:30,In asteptare,2026-01-19 20:18:17,
+20260119205144,2026-01-19 20:51:44,asd,sipos.iosif@cicor.com,0770220967,dacia,2013,tire-change,2026-01-22,10:00,In asteptare,2026-01-19 20:51:44,
+20260119205953,2026-01-19 20:59:53,Test User,test@example.com,0723000000,Dacia,Logan,tire-change,2026-01-25,10:00,In asteptare,2026-01-19 20:59:53,
+20260119211133,2026-01-19 21:11:33,asd,asdasd@gmail.com,123654789,bmw,asdasd,"tire-change,balancing",2026-01-22,11:00,In asteptare,2026-01-19 21:11:33,
+20260119211501,2026-01-19 21:15:01,asd,sipos.iosif@cicor.com,0770220967,dacia,2013,"tire-change,balancing",2026-01-22,13:00,In asteptare,2026-01-19 21:15:01,
+20260119213424,2026-01-19 21:34:24,asd,sipos.iosif@cicor.com,0770220967,volkswagen,2013,"balancing,shimb_ulei",2026-01-20,13:00,In asteptare,2026-01-19 21:34:24,0.0
+20260119213602,2026-01-19 21:36:02,Sipos Iosif,siposiosif20@yahoo.com,0770220967,dacia,2013,"tire-change,balancing,shimb_ulei",2026-01-20,11:30,In asteptare,2026-01-19 21:36:02,270.0
+20260119214240,2026-01-19 21:42:40,asd,sipos.iosif@cicor.com,0770220967,toyota,2013,"balancing,shimb_ulei",2026-01-22,15:00,In asteptare,2026-01-19 21:42:40,247.0

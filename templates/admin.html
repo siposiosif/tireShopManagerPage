@@ -4,10 +4,103 @@
     <meta charset="UTF-8">
     <title>Management | Vulcanizare Sofronea</title>
     <link rel="stylesheet" href="/static/style.css">
+    <style>
+        .notification-badge {
+            background: #e74c3c;
+            color: white;
+            border-radius: 50%;
+            padding: 2px 6px;
+            font-size: 12px;
+            font-weight: bold;
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            min-width: 18px;
+            text-align: center;
+        }
+        
+        .notification-popup {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: #2ecc71;
+            color: white;
+            padding: 15px 20px;
+            border-radius: 5px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            z-index: 1000;
+            animation: slideIn 0.3s ease-out;
+            max-width: 300px;
+        }
+        
+        @keyframes slideIn {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+        
+        .notification-popup.error {
+            background: #e74c3c;
+        }
+        
+        .notification-popup.warning {
+            background: #f39c12;
+        }
+        
+        .auto-refresh-indicator {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: rgba(0,0,0,0.8);
+            color: white;
+            padding: 5px 10px;
+            border-radius: 3px;
+            font-size: 12px;
+            z-index: 999;
+        }
+        
+        .auto-refresh-indicator.active {
+            background: rgba(46, 204, 113, 0.9);
+        }
+        
+        .pending-indicator {
+            position: relative;
+            display: inline-block;
+        }
+        
+        .pending-count {
+            background: #e74c3c;
+            color: white;
+            border-radius: 50%;
+            padding: 2px 6px;
+            font-size: 11px;
+            font-weight: bold;
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            min-width: 16px;
+            text-align: center;
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+        
+        .status-confirmed { color: #2ecc71; }
+        .status-rejected { color: #e74c3c; }
+        .status-pending { color: #f39c12; }
+    </style>
 </head>
 <body class="page-admin">
     <div class="admin-container">
-        <h1>Panou Gestiune - Vulcanizare Sofronea</h1>
+        <h1>
+            Panou Gestiune - Vulcanizare Sofronea
+            <span class="pending-indicator" id="pending-indicator">
+                <span id="pending-count" style="display: none;"></span>
+            </span>
+        </h1>
 
         <div class="manual-entry">
             <h2>➕ Adaugă Programare Manuală (Apel Telefon)</h2>
@@ -19,10 +112,8 @@
                     <input type="text" name="car-model" placeholder="Model" required>
                 </div>
                 <div class="form-row">
-                    <select name="service" required>
-                        <option value="tire-change">Schimb Anvelope</option>
-                        <option value="balancing">Echilibrare</option>
-                        <option value="repair">Reparație Pană</option>
+                    <select name="service" id="admin-service-select" required>
+                        <!-- Services will be loaded dynamically -->
                     </select>
                     <input type="date" name="date" required>
                     <input type="time" name="time" required>
@@ -31,27 +122,77 @@
             </form>
         </div>
 
-        <table>
+        <div class="service-management">
+            <h2>🔧 Gestionare Servicii</h2>
+            <div class="service-list" id="service-list">
+                <!-- Services will be loaded dynamically -->
+            </div>
+            <div class="add-service-form">
+                <h3>Adaugă Serviciu Nou</h3>
+                <form id="add-service-form">
+                    <div class="form-row">
+                        <input type="text" id="service-id" placeholder="ID Serviciu (ex: oil-change)" required>
+                        <input type="text" id="service-name" placeholder="Nume Serviciu" required>
+                        <select id="service-duration" required>
+                            <option value="30">30 minute</option>
+                            <option value="60">1 oră</option>
+                            <option value="90">1.5 ore</option>
+                            <option value="120">2 ore</option>
+                        </select>
+                        <input type="number" id="service-price" placeholder="Preț (RON)" min="0" step="0.01" required>
+                        <button type="submit" class="btn-add">Adaugă Serviciu</button>
+                    </div>
+                    <div class="form-row">
+                        <textarea id="service-description" placeholder="Descriere serviciu (opțional)" rows="2"></textarea>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <table id="reservations-table">
             <thead>
                 <tr>
-                    <th>Data Cererii</th>
-                    <th>Client / Telefon</th>
-                    <th>Vehicul</th>
-                    <th>Serviciu</th>
-                    <th>Data & Ora Programată</th>
-                    <th>Status</th>
+                    <th class="sortable" data-column="timestamp">Data Cererii ▼</th>
+                    <th class="sortable" data-column="nume">Client / Telefon ▼</th>
+                    <th class="sortable" data-column="marca">Vehicul ▼</th>
+                    <th class="sortable" data-column="serviciu">Serviciu ▼</th>
+                    <th class="sortable" data-column="pret">Preț ▼</th>
+                    <th class="sortable" data-column="data_pref">Data & Ora Programată ▼</th>
+                    <th class="sortable" data-column="status">Status ▼</th>
                     <th>Acțiuni</th>
                 </tr>
             </thead>
             <tbody>
-                {% for res in reservations | reverse %}
+                {% for res in reservations %}
                 <tr>
                     <td>{{ res.timestamp }}</td>
                     <td><strong>{{ res.nume }}</strong><br>{{ res.telefon }}</td>
                     <td>{{ res.marca }} {{ res.model }}</td>
-                    <td>{{ res.serviciu }}</td>
+                    <td>
+                        {% set service_names = [] %}
+                        {% for service_id in res.serviciu.split(',') %}
+                            {% set service_found = false %}
+                            {% for service in services %}
+                                {% if service.id == service_id %}
+                                    {% set _ = service_names.append(service.name) %}
+                                    {% set service_found = true %}
+                                {% endif %}
+                            {% endfor %}
+                            {% if not service_found %}
+                                {% if service_id == 'tire-change' %}
+                                    {% set _ = service_names.append('Schimb Anvelope Sezonier') %}
+                                {% elif service_id == 'balancing' %}
+                                    {% set _ = service_names.append('Echilibrare Roți') %}
+                                {% else %}
+                                    {% set _ = service_names.append(service_id) %}
+                                {% endif %}
+                            {% endif %}
+                        {% endfor %}
+                        {{ service_names|join(', ') }}
+                    </td>
+                    <td><strong>{{ res.pret }} RON</strong></td>
                     <td>{{ res.data_pref }} | <strong>{{ res.ora_pref }}</strong></td>
-                    <td style="color: {% if res.status == 'Confirmat' %}#2ecc71{% elif res.status == 'Respins' %}#e74c3c{% else %}#f39c12{% endif %};">
+                    <td class="{% if res.status == 'Confirmat' %}status-confirmed{% elif res.status == 'Respins' %}status-rejected{% else %}status-pending{% endif %}">
                         {{ res.status }}
                     </td>
                     <td>
@@ -67,5 +208,437 @@
             </tbody>
         </table>
     </div>
+
+    <!-- Notification popup container -->
+    <div id="notification-container"></div>
+    
+    <!-- Auto-refresh indicator -->
+    <div class="auto-refresh-indicator" id="auto-refresh-indicator">
+        🔄 Auto-refresh: <span id="refresh-status">Active</span>
+    </div>
+
+    <script>
+        // Pass token from server to JavaScript
+        const adminToken = "{{ token }}";
+        
+        // Global variables for auto-refresh and notifications
+        let lastReservationCount = parseInt("{{ reservations|length }}");
+        let lastPendingCount = parseInt("{{ pending_count or 0 }}");
+        let lastTimestamp = "{{ latest_timestamp or '' }}";
+        let autoRefreshInterval;
+        let isRefreshing = false;
+        
+        document.addEventListener('DOMContentLoaded', function() {
+            const table = document.getElementById('reservations-table');
+            const headers = table.querySelectorAll('th.sortable');
+            let currentSort = { column: 'timestamp', direction: 'desc' };
+
+            // Initial sort by timestamp descending (newest first)
+            sortTable('timestamp', 'desc');
+
+            headers.forEach(header => {
+                header.addEventListener('click', function() {
+                    const column = this.dataset.column;
+                    const currentDirection = this.textContent.includes('▼') ? 'desc' : 'asc';
+                    const newDirection = currentDirection === 'asc' ? 'desc' : 'asc';
+                    sortTable(column, newDirection);
+                });
+            });
+
+            function sortTable(column, direction) {
+                currentSort = { column, direction }; // Store current sort state
+                const tbody = table.querySelector('tbody');
+                const rows = Array.from(tbody.querySelectorAll('tr'));
+
+                // Update header indicators
+                headers.forEach(header => {
+                    if (header.dataset.column === column) {
+                        header.textContent = header.textContent.replace(' ▼', '').replace(' ▲', '') +
+                                           (direction === 'asc' ? ' ▲' : ' ▼');
+                    } else {
+                        header.textContent = header.textContent.replace(' ▼', '').replace(' ▲', '') + ' ▼';
+                    }
+                });
+
+                rows.sort((a, b) => {
+                    let aValue, bValue;
+
+                    switch(column) {
+                        case 'timestamp':
+                            aValue = new Date(a.cells[0].textContent);
+                            bValue = new Date(b.cells[0].textContent);
+                            break;
+                        case 'nume':
+                            aValue = a.cells[1].querySelector('strong').textContent.toLowerCase();
+                            bValue = b.cells[1].querySelector('strong').textContent.toLowerCase();
+                            break;
+                        case 'marca':
+                            aValue = a.cells[2].textContent.toLowerCase();
+                            bValue = b.cells[2].textContent.toLowerCase();
+                            break;
+                        case 'serviciu':
+                            aValue = a.cells[3].textContent.toLowerCase();
+                            bValue = b.cells[3].textContent.toLowerCase();
+                            break;
+                        case 'data_pref':
+                            const aDateTime = a.cells[4].textContent.split(' | ');
+                            const bDateTime = b.cells[4].textContent.split(' | ');
+                            aValue = new Date(aDateTime[0] + ' ' + aDateTime[1]);
+                            bValue = new Date(bDateTime[0] + ' ' + bDateTime[1]);
+                            break;
+                        case 'status':
+                            const statusOrder = { 'In asteptare': 1, 'Confirmat': 2, 'Respins': 3 };
+                            aValue = statusOrder[a.cells[5].textContent.trim()] || 4;
+                            bValue = statusOrder[b.cells[5].textContent.trim()] || 4;
+                            break;
+                        default:
+                            aValue = a.cells[0].textContent;
+                            bValue = b.cells[0].textContent;
+                    }
+
+                    if (direction === 'asc') {
+                        return aValue > bValue ? 1 : aValue < bValue ? -1 : 0;
+                    } else {
+                        return aValue < bValue ? 1 : aValue > bValue ? -1 : 0;
+                    }
+                });
+
+                rows.forEach(row => tbody.appendChild(row));
+            }
+
+            // Service Management
+            const serviceList = document.getElementById('service-list');
+            const adminServiceSelect = document.getElementById('admin-service-select');
+            const addServiceForm = document.getElementById('add-service-form');
+            
+            if (!serviceList || !adminServiceSelect || !addServiceForm) {
+                console.error('Service management elements not found!');
+                return;
+            }
+
+            function loadServices() {
+                fetch(`/api/services?token=${adminToken}`)
+                    .then(res => res.json())
+                    .then(services => {
+                        // Update service list
+                        serviceList.innerHTML = '';
+                        adminServiceSelect.innerHTML = '';
+
+                        services.forEach(service => {
+                            // Add to service list
+                            const serviceItem = document.createElement('div');
+                            serviceItem.className = 'service-item';
+                            serviceItem.innerHTML = `
+                                <div class="service-info">
+                                    <strong>${service.name}</strong> (${service.duration} min) - ${service.price > 0 ? service.price + ' RON' : '<em>Fără preț</em>'}
+                                    ${service.description ? `<br><small>${service.description}</small>` : ''}
+                                </div>
+                                <div class="service-actions">
+                                    <button class="btn-edit-price" data-service-id="${service.id}" data-current-price="${service.price}">Editare Preț</button>
+                                    ${service.id !== 'tire-change' && service.id !== 'balancing' ? 
+                                        `<button class="btn-delete" data-service-id="${service.id}">Șterge</button>` : 
+                                        '<small>(Serviciu de bază)</small>'}
+                                </div>
+                            `;
+                            serviceList.appendChild(serviceItem);
+
+                            // Add to admin service select
+                            const option = document.createElement('option');
+                            option.value = service.id;
+                            option.textContent = `${service.name} (${service.duration} min)`;
+                            adminServiceSelect.appendChild(option);
+                        });
+
+                        // Add delete event listeners
+                        document.querySelectorAll('.btn-delete').forEach(btn => {
+                            btn.addEventListener('click', function() {
+                                const serviceId = this.dataset.serviceId;
+                                if (confirm('Sigur doriți să ștergeți acest serviciu?')) {
+                                    deleteService(serviceId);
+                                }
+                            });
+                        });
+
+                        // Add edit price event listeners
+                        document.querySelectorAll('.btn-edit-price').forEach(btn => {
+                            btn.addEventListener('click', function() {
+                                const serviceId = this.dataset.serviceId;
+                                const currentPrice = this.dataset.currentPrice;
+                                const newPrice = prompt('Introduceți noul preț pentru serviciu (RON):', currentPrice);
+                                if (newPrice !== null && newPrice !== currentPrice) {
+                                    updateServicePrice(serviceId, parseFloat(newPrice) || 0);
+                                }
+                            });
+                        });
+                    })
+                    .catch(err => console.error('Error loading services:', err));
+            }
+
+            function deleteService(serviceId) {
+                fetch(`/api/services/${serviceId}?token=${adminToken}`, { method: 'DELETE' })
+                    .then(res => res.json())
+                    .then(() => loadServices())
+                    .catch(err => alert('Eroare la ștergerea serviciului'));
+            }
+
+            function updateServicePrice(serviceId, newPrice) {
+                fetch(`/api/services/${serviceId}/price?token=${adminToken}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ price: newPrice })
+                })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success) {
+                        loadServices();
+                        alert('Preț actualizat cu succes!');
+                    } else {
+                        alert('Eroare la actualizarea prețului: ' + (data.error || 'Necunoscut'));
+                    }
+                })
+                .catch(err => alert('Eroare la actualizarea prețului'));
+            }
+
+            // Add service form
+            addServiceForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                
+                const serviceId = document.getElementById('service-id').value.trim();
+                const serviceName = document.getElementById('service-name').value.trim();
+                const serviceDuration = document.getElementById('service-duration').value;
+                const servicePrice = parseFloat(document.getElementById('service-price').value);
+                const serviceDescription = document.getElementById('service-description').value.trim();
+                
+                if (!serviceId || !serviceName || !serviceDuration || isNaN(servicePrice) || servicePrice < 0) {
+                    alert('Completați toate câmpurile obligatorii și introduceți un preț valid!');
+                    return false;
+                }
+                
+                const serviceData = {
+                    id: serviceId,
+                    name: serviceName,
+                    duration: parseInt(serviceDuration),
+                    price: servicePrice,
+                    description: serviceDescription
+                };
+
+                // Disable the submit button to prevent double submission
+                const submitBtn = addServiceForm.querySelector('button[type="submit"]');
+                submitBtn.disabled = true;
+                submitBtn.textContent = 'Se adaugă...';
+
+                fetch(`/api/services?token=${adminToken}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(serviceData)
+                })
+                .then(res => {
+                    if (!res.ok) {
+                        throw new Error(`HTTP ${res.status}: ${res.statusText}`);
+                    }
+                    return res.json();
+                })
+                .then(data => {
+                    if (data.error) {
+                        alert('Eroare: ' + data.error);
+                    } else {
+                        alert('Serviciu adăugat cu succes!');
+                        addServiceForm.reset();
+                        loadServices();
+                    }
+                })
+                .catch(err => {
+                    console.error('Error adding service:', err);
+                    alert('Eroare la adăugarea serviciului: ' + err.message);
+                })
+                .finally(() => {
+                    // Re-enable the submit button
+                    submitBtn.disabled = false;
+                    submitBtn.textContent = 'Adaugă Serviciu';
+                });
+                
+                return false;
+            });
+
+            // Load services on page load
+            loadServices();
+            
+            // Initialize auto-refresh and notifications
+            initializeAutoRefresh();
+            updatePendingIndicator(lastPendingCount);
+        });
+        
+        // Auto-refresh functionality
+        function initializeAutoRefresh() {
+            // Refresh every 30 seconds
+            autoRefreshInterval = setInterval(checkForUpdates, 30000);
+            updateRefreshIndicator(true);
+            
+            // Initial check
+            setTimeout(checkForUpdates, 2000);
+        }
+        
+        function checkForUpdates() {
+            if (isRefreshing) return; // Prevent overlapping requests
+            
+            isRefreshing = true;
+            updateRefreshIndicator(true, 'Checking...');
+            
+            fetch(`/api/reservations/updates?token=${adminToken}`)
+                .then(res => res.json())
+                .then(data => {
+                    const newPendingCount = data.pending_count;
+                    const newTotalCount = data.total_count;
+                    const newTimestamp = data.latest_timestamp;
+                    
+                    // Check for new reservations
+                    if (newTotalCount > lastReservationCount) {
+                        showNotification(`Nouă programare primită! (${newTotalCount - lastReservationCount} nouă)`, 'success');
+                        playNotificationSound();
+                        refreshReservationsTable(data.reservations, data.services);
+                        lastReservationCount = newTotalCount;
+                        lastTimestamp = newTimestamp;
+                    } else if (newTimestamp !== lastTimestamp) {
+                        // Status updates or other changes
+                        refreshReservationsTable(data.reservations, data.services);
+                        lastTimestamp = newTimestamp;
+                    }
+                    
+                    // Update pending count indicator
+                    if (newPendingCount !== lastPendingCount) {
+                        if (newPendingCount > lastPendingCount) {
+                            showNotification(`${newPendingCount - lastPendingCount} programare nouă în așteptare!`, 'warning');
+                        }
+                        updatePendingIndicator(newPendingCount);
+                        lastPendingCount = newPendingCount;
+                    }
+                    
+                    updateRefreshIndicator(true, 'Active');
+                })
+                .catch(err => {
+                    console.error('Error checking for updates:', err);
+                    updateRefreshIndicator(false, 'Error');
+                })
+                .finally(() => {
+                    isRefreshing = false;
+                });
+        }
+        
+        function refreshReservationsTable(reservations, services) {
+            const tbody = document.querySelector('#reservations-table tbody');
+            tbody.innerHTML = '';
+            
+            reservations.forEach(res => {
+                const row = document.createElement('tr');
+                
+                // Service names resolution
+                const serviceNames = [];
+                if (res.serviciu) {
+                    res.serviciu.split(',').forEach(serviceId => {
+                        const service = services.find(s => s.id === serviceId.trim());
+                        if (service) {
+                            serviceNames.push(service.name);
+                        } else {
+                            // Fallback for default services
+                            if (serviceId.trim() === 'tire-change') {
+                                serviceNames.push('Schimb Anvelope Sezonier');
+                            } else if (serviceId.trim() === 'balancing') {
+                                serviceNames.push('Echilibrare Roți');
+                            } else {
+                                serviceNames.push(serviceId.trim());
+                            }
+                        }
+                    });
+                }
+                
+                row.innerHTML = `
+                    <td>${res.timestamp}</td>
+                    <td><strong>${res.nume}</strong><br>${res.telefon}</td>
+                    <td>${res.marca} ${res.model}</td>
+                    <td>${serviceNames.join(', ')}</td>
+                    <td><strong>${res.pret} RON</strong></td>
+                    <td>${res.data_pref} | <strong>${res.ora_pref}</strong></td>
+                    <td style="color: ${res.status === 'Confirmat' ? '#2ecc71' : res.status === 'Respins' ? '#e74c3c' : '#f39c12'};">
+                        ${res.status}
+                    </td>
+                    <td>
+                        ${res.status === 'In asteptare' ? 
+                            `<a href="/update_status/${res.id}/confirm?token=${adminToken}" class="btn-confirm">Confirmă</a>
+                             <a href="/update_status/${res.id}/reject?token=${adminToken}" class="btn-reject">Respinge</a>` :
+                            '-'}
+                    </td>
+                `;
+                
+                tbody.appendChild(row);
+            });
+            
+            // Re-apply current sorting
+            if (window.currentSort) {
+                sortTable(window.currentSort.column, window.currentSort.direction);
+            }
+        }
+        
+        function updatePendingIndicator(count) {
+            const indicator = document.getElementById('pending-count');
+            if (count > 0) {
+                indicator.textContent = count;
+                indicator.style.display = 'inline-block';
+            } else {
+                indicator.style.display = 'none';
+            }
+        }
+        
+        function updateRefreshIndicator(active, status = 'Active') {
+            const indicator = document.getElementById('auto-refresh-indicator');
+            const statusEl = document.getElementById('refresh-status');
+            
+            indicator.className = `auto-refresh-indicator ${active ? 'active' : ''}`;
+            statusEl.textContent = status;
+        }
+        
+        function showNotification(message, type = 'info') {
+            const container = document.getElementById('notification-container');
+            const notification = document.createElement('div');
+            notification.className = `notification-popup ${type}`;
+            notification.textContent = message;
+            
+            container.appendChild(notification);
+            
+            // Auto-remove after 5 seconds
+            setTimeout(() => {
+                if (notification.parentNode) {
+                    notification.parentNode.removeChild(notification);
+                }
+            }, 5000);
+        }
+        
+        function playNotificationSound() {
+            // Create a simple beep sound using Web Audio API
+            try {
+                const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                const oscillator = audioContext.createOscillator();
+                const gainNode = audioContext.createGain();
+                
+                oscillator.connect(gainNode);
+                gainNode.connect(audioContext.destination);
+                
+                oscillator.frequency.setValueAtTime(800, audioContext.currentTime);
+                oscillator.frequency.setValueAtTime(600, audioContext.currentTime + 0.1);
+                
+                gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.3);
+                
+                oscillator.start(audioContext.currentTime);
+                oscillator.stop(audioContext.currentTime + 0.3);
+            } catch (e) {
+                // Fallback: no sound if Web Audio API is not supported
+                console.log('Notification sound not supported');
+            }
+        }
+        
+        // Store current sort state globally for refresh
+        let currentSort = { column: 'timestamp', direction: 'desc' };
+    </script>
 </body>
 </html>

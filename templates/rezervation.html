@@ -64,21 +64,25 @@
                 <h3>3. Programare Serviciu</h3>
                 <div class="grid">
                     <div class="form-group full-width">
-                        <label for="service">Tipul Serviciului</label>
-                        <select id="service" name="service" required>
-                            <option value="">Selectați Serviciul</option>
-                            <option value="tire-change">Schimb Anvelope Sezonier</option>
-                            <option value="balancing">Echilibrare Roți</option>
-                            <option value="repair">Reparație Pană</option>
-                            <option value="full-service">Revizie Completă Anvelope</option>
-                        </select>
+                        <label>Serviciile Dorite</label>
+                        <div id="selected-services-display" class="selected-services-display">
+                            <p class="no-services">Niciun serviciu selectat. Adăugați servicii folosind butonul "+" de mai jos.</p>
+                        </div>
+                        <div class="service-selection">
+                            <select id="service-selector">
+                                <option value="">Selectați un serviciu...</option>
+                                <!-- Services will be loaded dynamically -->
+                            </select>
+                            <button type="button" id="add-service-btn" class="btn-add-service">+ Adaugă Serviciu</button>
+                        </div>
+                        <input type="hidden" id="selected-services" name="services" required>
                     </div>
                     <div class="form-group">
                         <label for="date">Data Programării</label>
                         <input type="date" id="date" name="date" required>
                     </div>
                     <div class="form-group">
-                        <label for="time">Ora Disponibilă (la 30 min)</label>
+                        <label for="time">Ora Disponibilă</label>
                         <select id="time" name="time" required disabled>
                             <option value="">Alegeți data întâi...</option>
                         </select>
@@ -87,6 +91,20 @@
                         <label for="notes">Observații (Opțional)</label>
                         <textarea id="notes" name="notes" rows="3" placeholder="Alte detalii despre mașină sau problemă..."></textarea>
                     </div>
+                </div>
+            </div>
+
+            <div class="form-section" id="price-section" style="display: none;">
+                <h3>4. Estimare Preț</h3>
+                <div class="price-summary">
+                    <div id="selected-services-list">
+                        <!-- Selected services will be displayed here -->
+                    </div>
+                    <div class="price-row total">
+                        <span class="price-label">Total Estimat:</span>
+                        <span class="price-value" id="total-price">0 RON</span>
+                    </div>
+                    <p class="price-note">* Prețul este estimativ. Confirmarea finală va fi trimisă prin email.</p>
                 </div>
             </div>
 
